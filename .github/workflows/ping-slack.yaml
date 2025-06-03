@@ -1,0 +1,48 @@
+# Copyright ©2017-2025  Mr MXF   info@mrmxf.com
+# BSD-3-Clause License           https://opensource.org/license/bsd-3-clause/
+# clogwork - collection of reusable actions and tools for Mr MXF project.
+#
+#          _                            _               _   
+#   _ __  (_)  _ _    __ _   ___   ___ | |  __ _   __  | |__
+#  | '_ \ | | | ' \  / _` | |___| (_-< | | / _` | / _| | / /
+#  | .__/ |_| |_||_| \__, |       /__/ |_| \__,_| \__| |_\_\
+#  |_|               |___/                                  
+#
+#  GitHub Workflow to ping a slack channel on success / failure
+#  https://docs.github.com/en/actions/sharing-automations/reusing-workflows
+#
+# -          vars.message - the account namespace for docker hub e.g. mrmxf
+# - secrets.slack_webhook - the SLACK HOOK to post messages to the team
+# - secrets.get_clog      - the bash string to install clog with eval "$GET_CLOG"
+
+name: build-hugo
+run-name: 👷🏻‍♀️${{ github.actor }} 🏗️build-hugo(www-metarex-media) 🚀
+on:
+  workflow_call:
+    inputs:
+      simple_message:
+        required: true
+        type: string
+    secrets:
+      slack_webhook:
+        required: true
+      get_clog:
+        required: true
+
+jobs:
+  ping-slack:
+    runs-on: ubuntu-latest
+    steps:
+      - # ---------------------------------------------------------------------
+        name: ping Slack
+        env:
+          HOOK_SLACK:  ${{ secrets.slack_webhook }}
+          MESSAGE:  ${{ inputs.simple_message }}
+          GET_CLOG:  ${{ secrets.get_clog }}
+        run: |
+          # only support simple messages
+          #
+          # get clog with the magic incantation string
+          eval "$GET_CLOG"
+          # use clog to ping slack via the webhook
+          clog Slack "$MESSAGE"
