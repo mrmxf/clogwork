@@ -44,5 +44,6 @@ jobs:
           #
           # get clog with the magic incantation string
           eval "$GET_CLOG"
+          echo "$MESSAGE"
           # use clog to ping slack via the webhook
           clog Slack "$MESSAGE"
