@@ -34,16 +34,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - # ---------------------------------------------------------------------
+        name: get clog
+        env:
+          GET_CLOG:  ${{ secrets.get_clog }}
+        run: eval "$GET_CLOG"
+      - # ---------------------------------------------------------------------
         name: ping Slack
         env:
+          ACTOR: ${{ github.actor }}
+          EVENT: ${{ github.event_name }}
+          JOB: ${{ github.job }}
+          REPO: ${{ github.repository }}
+          REF: ${{ github.ref }}
+          REF_TYPE: ${{ github.ref_type }}
+          WORKFLOW: ${{ github.workflow }}
           HOOK_SLACK:  ${{ secrets.slack_webhook }}
           MESSAGE:  ${{ inputs.simple_message }}
-          GET_CLOG:  ${{ secrets.get_clog }}
         run: |
           # only support simple messages
           #
-          # get clog with the magic incantation string
-          eval "$GET_CLOG"
-          echo "$MESSAGE"
+          MSG="$MESSAGE\nby: $ACTOR, workflow: $WORKFLOW, repo: $REPO:$REF($REF_TYPE), job: $JOB, event: $EVENT"
+          printf "$MESSAGE"
           # use clog to ping slack via the webhook
           clog Slack "$MESSAGE"
