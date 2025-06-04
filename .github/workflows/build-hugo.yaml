@@ -81,7 +81,7 @@ jobs:
         name: verify message
         env:
           msg: ${{ steps.clog-build.outputs.message }}
-        run: clog Lof -I "$MSG"
+        run: clog Log -I "$MSG"
       - # ---------------------------------------------------------------------
         name: kodata artifacts
         uses: actions/upload-artifact@v4
