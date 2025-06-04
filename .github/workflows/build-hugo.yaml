@@ -57,14 +57,19 @@ jobs:
           username: ${{  inputs.docker_ns }}
           password: ${{ secrets.docker_pat }}
       - # ---------------------------------------------------------------------
+        id: get-clog
+        name: get clog
+        env:
+          GET_CLOG: ${{ secrets.get_clog }}
+        run: |
+          eval "$GET_CLOG"
+      - # ---------------------------------------------------------------------
         id: clog-build
         name: Build Hugo & Container with clog
         env:
           GET_CLOG: ${{ secrets.get_clog }}
           DOCKER_NS: ${{ inputs.docker_ns }}
         run: |
-          eval "$GET_CLOG"
-          echo "DOCKER_NS = $DOCKER_NS"
           clog install golang
           clog install hugo
           clog install ko
