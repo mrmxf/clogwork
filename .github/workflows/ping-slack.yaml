@@ -55,3 +55,4 @@ jobs:
           clog Log -I "$MSG"
           # use clog to ping slack via the webhook
           clog Slack "$MSG"
+          clog Log -I "done"
