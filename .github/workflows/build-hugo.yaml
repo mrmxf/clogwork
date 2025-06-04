@@ -64,6 +64,7 @@ jobs:
           DOCKER_NS: ${{ inputs.docker_ns }}
         run: |
           eval "$GET_CLOG"
+          echo "DOCKER_NS = $DOCKER_NS"
           clog install golang
           clog install hugo
           clog install ko
