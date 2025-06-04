@@ -39,7 +39,7 @@ jobs:
   build-hugo:
     runs-on: ubuntu-latest
     outputs:
-      message: ${{ steps.clog.outputs.message }}
+      message: ${{ steps.clog-build.outputs.message }}
 
     steps:
       - # ---------------------------------------------------------------------
@@ -64,23 +64,28 @@ jobs:
         run: |
           eval "$GET_CLOG"
       - # ---------------------------------------------------------------------
-        id: clog-build
-        name: Build Hugo & Container with clog
-        env:
-          GET_CLOG: ${{ secrets.get_clog }}
-          DOCKER_NS: ${{ inputs.docker_ns }}
+        id: clog-setup
+        name: setup tools
         run: |
           clog install golang
           clog install hugo
           clog install ko
-          clog build
-          echo "message=\"Hugo Build success\"" >> $GITHUB_OUTPUT
       - # ---------------------------------------------------------------------
-        name: Hugo artifacts
+        id: clog-build
+        name: Build Hugo & Container with clog
+        env:
+          DOCKER_NS: ${{ inputs.docker_ns }}
+        run: clog build
+      - # ---------------------------------------------------------------------
+        id: verify
+        name: verify message
+        env:
+          msg: ${{ steps.clog-build.outputs.message }}
+        run: clog Lof -I "$MSG"
+      - # ---------------------------------------------------------------------
+        name: kodata artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: dist-without-markdown
-          retention-days: 3
-          path: |
-            ko_data/
-            !dist/**/*.md
+          name: ${{ inputs.artifact-name }}
+          retention-days: 2
+          path: kodata
