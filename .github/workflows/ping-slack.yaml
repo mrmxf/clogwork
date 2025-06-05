@@ -54,8 +54,9 @@ jobs:
           HOOK_SLACK:  ${{ secrets.slack_webhook }}
           MESSAGE:  ${{ inputs.simple_message }}
         run: |
+          clog Log -I "received: $MESSAGE"
           MSG="msg: \"$MESSAGE\" by: $ACTOR, workflow: $WORKFLOW, repo: $REPO:$REF($REF_TYPE), job: $JOB, event: $EVENT"
-          clog Log -I "$MSG"
+          clog Log -I "sending:\n$MSG"
           # use clog to ping slack via the webhook
           clog Slack "$MSG"
           clog Log -I "done"
