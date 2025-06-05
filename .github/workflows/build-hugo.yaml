@@ -79,7 +79,15 @@ jobs:
         name: hugo container with clog
         env:
           DOCKER_NS: ${{ inputs.docker_ns }}
-        run: clog build
+        run: |
+          rm -f /tmp/clog-notify >/dev/null 2>&1  # delete any notify file
+          clog build
+          if [ -f /tmp/clog-notify ]; then
+            echo "message=\"$(cat /tmp/clog-notify)\"" >> $GITHUB_OUTPUT
+          else
+            mImage="$DOCKER_NS/${{ github.event.repository.name }}:"
+            printf "message=\"deployed image: $mImage, github action: $CLOGWORK_FLOW\""
+          fi
       - # ---------------------------------------------------------------------
         name: kodata/ →  artifact(${{ inputs.artifact-name }})
         uses: actions/upload-artifact@v4
