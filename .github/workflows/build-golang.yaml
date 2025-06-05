@@ -13,7 +13,10 @@
 # - secrets.HOOK_SLACK  - the SLACK HOOK to post messages to the team
 
 name: build-hugo
-run-name: 👷🏻‍♀️${{ github.actor }} 🏗️build-hugo(--name-to-be-inserted--) 🚀
+run-name: 🥷${{ github.actor }} 🏃‍➡️ ${{ github.workflow }}.${{ github.job }}${{ env.CLOGWORK_WF}}"
+env:
+  CLOGWORK_REPO: "mrmxf/clogwork/.github/workflows"
+  CLOGWORK_WF: "${{ env.CLOGWORK_WF}}/build-golang"
 on:
   workflow_call:
     inputs:
@@ -31,13 +34,13 @@ on:
     outputs:
       message:
         description: "Result of the build for announcing on slack"
-        value: ${{ jobs.build-hugo.outputs.message }}
+        value: ${{ jobs.clog-build.outputs.message }}
 
 jobs:
-  build-hugo:
+  build-golang:
     runs-on: ubuntu-latest
     outputs:
-      message: ${{ steps.clog.outputs.message }}
+      message: ${{ steps.clog-build.outputs.message }}
 
     steps:
       - # ---------------------------------------------------------------------
@@ -55,23 +58,37 @@ jobs:
           username: ${{ vars.DOCKER_NS }}
           password: ${{ secrets.DOCKER_PAT }}
       - # ---------------------------------------------------------------------
-        id: clog
-        name: Build Hugo & Container with clog
+        id: get-clog
+        name: get clog
         env:
-          GET_CLOG: ${{ secrets.GET_CLOG }}
+          GET_CLOG: ${{ secrets.get_clog }}
         run: |
           eval "$GET_CLOG"
+          clog Log -I "Reusable workflow${{ env.CLOGWORK_WF }}"
+      - # ---------------------------------------------------------------------
+        id: clog-setup
+        name: setup tools
+        run: |
           clog install golang
           clog install hugo
           clog install ko
-          clog build
-          echo "message=\"Hugo Build success\"" >> $GITHUB_OUTPUT
       - # ---------------------------------------------------------------------
-        name: Hugo artifacts
+        id: clog-build
+        name: golang build artifacts with clog
+        run: |
+          clog install golang
+          clog install hugo
+          clog install ko
+      - # ---------------------------------------------------------------------
+        name: tmp/ → artifact(${{ inputs.artifact-name }})
         uses: actions/upload-artifact@v4
         with:
-          name: dist-without-markdown
-          retention-days: 3
-          path: |
-            ko_data
-            !dist/**/*.md
+          name: ${{ inputs.artifact-name }}
+          retention-days: 2
+          path: tmp
+      - # ---------------------------------------------------------------------
+        id: notify
+        name: notify-team
+        env:
+          CLOG_BUILD_MSG: ${{ steps.clog-build.outputs.message }}
+        run: clog Log -I "$CLOG_BUILD_MSG"

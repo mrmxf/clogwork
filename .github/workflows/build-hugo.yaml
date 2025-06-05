@@ -15,12 +15,15 @@
 # - secrets.HOOK_SLACK - the SLACK HOOK to post messages to the team
 
 name: build-hugo
-run-name: 👷🏻‍♀️${{ github.actor }} 🏗️build-hugo(--name-to-be-inserted--) 🚀
+run-name: 🥷${{ github.actor }} 🏃‍➡️ ${{ github.workflow }}.${{ github.job }}${{ env.CLOGWORK_WF}}"
+env:
+  CLOGWORK_REPO: "mrmxf/clogwork/.github/workflows"
+  CLOGWORK_WF: "${{ env.CLOGWORK_WF }}/build-hugo"
 on:
   workflow_call:
     inputs:
       artifact-name:
-        required: false
+        required: true
         type: string
       docker_ns:
         required: true
@@ -33,7 +36,7 @@ on:
     outputs:
       message:
         description: "Result of the build for announcing on slack"
-        value: ${{ jobs.build-hugo.outputs.message }}
+        value: ${{ jobs.clog-build.outputs.message }}
 
 jobs:
   build-hugo:
@@ -63,6 +66,7 @@ jobs:
           GET_CLOG: ${{ secrets.get_clog }}
         run: |
           eval "$GET_CLOG"
+          clog Log -I "Reusable workflow${{ env.CLOGWORK_WF}}"
       - # ---------------------------------------------------------------------
         id: clog-setup
         name: setup tools
@@ -72,20 +76,20 @@ jobs:
           clog install ko
       - # ---------------------------------------------------------------------
         id: clog-build
-        name: Build Hugo & Container with clog
+        name: hugo container with clog
         env:
           DOCKER_NS: ${{ inputs.docker_ns }}
         run: clog build
       - # ---------------------------------------------------------------------
-        id: verify
-        name: verify message
-        env:
-          msg: ${{ steps.clog-build.outputs.message }}
-        run: clog Log -I "$MSG"
-      - # ---------------------------------------------------------------------
-        name: kodata artifacts
+        name: kodata/ →  artifact(${{ inputs.artifact-name }})
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.artifact-name }}
           retention-days: 2
           path: kodata
+      - # ---------------------------------------------------------------------
+        id: notify
+        name: notify-team
+        env:
+          CLOG_BUILD_MSG: ${{ steps.clog-build.outputs.message }}
+        run: clog Log -I "$CLOG_BUILD_MSG"

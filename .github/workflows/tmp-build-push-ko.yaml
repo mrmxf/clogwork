@@ -8,7 +8,10 @@
 # - secrets.HOOK_SLACK - the SLACK HOOK to post messages to the team
 
 name: build-www-metarex-media
-run-name: 👷🏻‍♀️${{ github.actor }} 🏗️dev-build-ko(www-metarex-media) 🚀
+run-name: 🥷${{ github.actor }} 🏃‍➡️ ${{ github.workflow }}.${{ github.job }}${{ env.CLOGWORK_WF}}"
+env:
+  CLOGWORK_REPO: "mrmxf/clogwork/.github/workflows"
+  CLOGWORK_WF: "${{ env.CLOGWORK_WF }}/dump-context"
 on:
   push:                         # run every push
     branches:
