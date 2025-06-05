@@ -16,10 +16,10 @@
 # - secrets.get_clog      - the bash string to install clog with eval "$GET_CLOG"
 
 name: build-hugo
-run-name: 🥷${{ github.actor }} 🏃‍➡️ ${{ github.workflow }}.${{ github.job }}${{ env.CLOGWORK_WF}}"
+run-name: 🥷${{ github.actor }} 🏃‍➡️ ${{ github.workflow }}.${{ github.job }}${{ env.CLOGWORK_FLOW}}"
 env:
   CLOGWORK_REPO: "mrmxf/clogwork/.github/workflows"
-  CLOGWORK_WF: "${{ env.CLOGWORK_WF }}/ping-slack"
+  CLOGWORK_FLOW: "mrmxf/clogwork/.github/workflows/ping-slack"
 on:
   workflow_call:
     inputs:

@@ -13,10 +13,10 @@
 # - secrets.HOOK_SLACK  - the SLACK HOOK to post messages to the team
 
 name: build-hugo
-run-name: 🥷${{ github.actor }} 🏃‍➡️ ${{ github.workflow }}.${{ github.job }}${{ env.CLOGWORK_WF}}"
+run-name: 🥷${{ github.actor }} 🏃‍➡️ ${{ github.workflow }}.${{ github.job }}${{ env.CLOGWORK_FLOW}}"
 env:
   CLOGWORK_REPO: "mrmxf/clogwork/.github/workflows"
-  CLOGWORK_WF: "${{ env.CLOGWORK_WF}}/build-golang"
+  CLOGWORK_FLOW: "mrmxf/clogwork/.github/workflows/build-golang"
 on:
   workflow_call:
     inputs:
@@ -64,7 +64,7 @@ jobs:
           GET_CLOG: ${{ secrets.get_clog }}
         run: |
           eval "$GET_CLOG"
-          clog Log -I "Reusable workflow${{ env.CLOGWORK_WF }}"
+          clog Log -I "Reusable workflow${{ env.CLOGWORK_FLOW }}"
       - # ---------------------------------------------------------------------
         id: clog-setup
         name: setup tools
