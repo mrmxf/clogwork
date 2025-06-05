@@ -64,7 +64,7 @@ jobs:
           GET_CLOG: ${{ secrets.get_clog }}
         run: |
           eval "$GET_CLOG"
-          clog Log -I "Reusable workflow${{ env.CLOGWORK_FLOW }}"
+          clog Log -I "Reusable workflow: ${{ env.CLOGWORK_FLOW }}"
       - # ---------------------------------------------------------------------
         id: clog-setup
         name: setup tools
