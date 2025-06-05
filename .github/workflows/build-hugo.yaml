@@ -15,7 +15,7 @@
 # - secrets.HOOK_SLACK - the SLACK HOOK to post messages to the team
 
 name: build-hugo
-run-name: 🥷${{ github.actor }} 🏃‍➡️ ${{ github.workflow }}.${{ github.job }}${{ env.CLOGWORK_FLOW}}"
+run-name: 🥷${{ github.actor }} 🏃‍➡️ ${{ github.workflow }}.${{ github.job }}(clogwork/.../build-hugo)"
 env:
   CLOGWORK_REPO: "mrmxf/clogwork/.github/workflows"
   CLOGWORK_FLOW: "mrmxf/clogwork/.github/workflows/build-hugo"

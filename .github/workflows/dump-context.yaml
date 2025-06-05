@@ -12,7 +12,7 @@
 # callable GitHub workflow to dump the context of a job - for debug
 
 name: dump-context
-run-name: 🥷${{ github.actor }} 🏃‍➡️ ${{ github.workflow }}.${{ github.job }}${{ env.CLOGWORK_FLOW}}"
+run-name: 🥷${{ github.actor }} 🏃‍➡️ ${{ github.workflow }}.${{ github.job }}(clogwork/.../dump-context)"
 env:
   CLOGWORK_REPO: "mrmxf/clogwork/.github/workflows"
   CLOGWORK_FLOW: "mrmxf/clogwork/.github/workflows/dump-context"
