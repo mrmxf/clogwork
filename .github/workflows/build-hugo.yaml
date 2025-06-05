@@ -100,7 +100,7 @@ jobs:
       - # ---------------------------------------------------------------------
         id: notify
         name: notify-team
-        if: ${{ secrets.webhook_slack }}
+        if: ${{ env.HOOK_SLACK != '' }}
         env:
           CLOG_BUILD_MSG: ${{ steps.clog-build.outputs.message }}
           ACTOR: ${{ github.actor }}
