@@ -12,7 +12,7 @@
 #  https://docs.github.com/en/actions/sharing-automations/reusing-workflows
 #
 # -          vars.message - the account namespace for docker hub e.g. mrmxf
-# - secrets.slack_webhook - the SLACK HOOK to post messages to the team
+# - secrets.webhook_slack - the SLACK HOOK to post messages to the team
 # - secrets.get_clog      - the bash string to install clog with eval "$GET_CLOG"
 
 name: build-hugo
@@ -27,7 +27,7 @@ on:
         required: true
         type: string
     secrets:
-      slack_webhook:
+      webhook_slack:
         required: true
       get_clog:
         required: true
@@ -51,7 +51,7 @@ jobs:
           REF: ${{ github.ref }}
           REF_TYPE: ${{ github.ref_type }}
           WORKFLOW: ${{ github.workflow }}
-          HOOK_SLACK:  ${{ secrets.slack_webhook }}
+          HOOK_SLACK:  ${{ secrets.webhook_slack }}
           MESSAGE:  ${{ inputs.simple_message }}
         run: |
           clog Log -I "received: $MESSAGE"

@@ -33,6 +33,8 @@ on:
         required: true
       get_clog:
         required: true
+      webhook_slack:
+        required: false
     outputs:
       message:
         description: "Result of the build for announcing on slack"
@@ -98,6 +100,22 @@ jobs:
       - # ---------------------------------------------------------------------
         id: notify
         name: notify-team
+        if: ${{ secrets.webhook_slack }}
         env:
           CLOG_BUILD_MSG: ${{ steps.clog-build.outputs.message }}
-        run: clog Log -I "$CLOG_BUILD_MSG"
+          ACTOR: ${{ github.actor }}
+          EVENT: ${{ github.event_name }}
+          JOB: ${{ github.job }}
+          REPO: ${{ github.repository }}
+          REF: ${{ github.ref }}
+          REF_TYPE: ${{ github.ref_type }}
+          WORKFLOW: ${{ github.workflow }}
+          HOOK_SLACK:  ${{ secrets.webhook_slack }}
+          MESSAGE:  ${{ inputs.simple_message }}
+        run: |
+          clog Log -I "base message:\n$MESSAGE"
+          MSG="msg: \"$MESSAGE\" by: $ACTOR, workflow: $WORKFLOW, repo: $REPO:$REF($REF_TYPE), job: $JOB, event: $EVENT"
+          clog Log -I "sending:\n$MSG"
+          # use clog to ping slack via the webhook
+          clog Slack "$MSG"
+          clog Log -I "done"
