@@ -21,7 +21,7 @@ on:
         required: true
         type: string
       docker_ns:
-        required: true
+        required: false
         type: string
     secrets:
       aws_access_key_id:
