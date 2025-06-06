@@ -7,12 +7,6 @@
 #  | '_ \ | || | | | | | / _` | |___| | ' \  | || | / _` | / _ \
 #  |_.__/  \_,_| |_| |_| \__,_|       |_||_|  \_,_| \__, | \___/
 #                                                   |___/
-#
-#  GitHub Workflow to build a hugo website for staging or production
-#
-# - secrets.DOCKER_PAT - the personal access token for docker hub
-# -     vars.DOCKER_NS - the account namespace for docker hub e.g. mrmxf
-# - secrets.HOOK_SLACK - the SLACK HOOK to post messages to the team
 
 name: build-hugo
 run-name: 🥷${{ github.actor }} 🏃‍➡️ ${{ github.workflow }}.${{ github.job }}(clogwork/.../build-hugo)"
@@ -82,13 +76,14 @@ jobs:
         env:
           DOCKER_NS: ${{ inputs.docker_ns }}
         run: |
-          rm -f /tmp/clog-notify >/dev/null 2>&1  # delete any notify file
+          MSG_FILE="tmp/clog-notify"
+          rm -f $MSG_FILE >/dev/null 2>&1      # delete any notify file
           clog build
-          if [ -f /tmp/clog-notify ]; then
-            echo "message=\"$(cat /tmp/clog-notify)\"" >> $GITHUB_OUTPUT
+          if [ -f "$MSG_FILE" ]; then
+            echo "message=\"$(cat $MSG_FILE)\"" >> $GITHUB_OUTPUT
           else
             mImage="$DOCKER_NS/${{ github.event.repository.name }}:"
-            printf "message=\"deployed image: $mImage, github action: $CLOGWORK_FLOW\""
+            printf "message=\"deployed image: $mImage, github action: $CLOGWORK_FLOW\"" >> $GITHUB_OUTPUT
           fi
       - # ---------------------------------------------------------------------
         name: kodata/ →  artifact(${{ inputs.artifact-name }})
@@ -111,10 +106,9 @@ jobs:
           REF_TYPE: ${{ github.ref_type }}
           WORKFLOW: ${{ github.workflow }}
           HOOK_SLACK:  ${{ secrets.webhook_slack }}
-          MESSAGE:  ${{ inputs.simple_message }}
         run: |
-          clog Log -I "base message:\n$MESSAGE"
-          MSG="msg: \"$MESSAGE\" by: $ACTOR, workflow: $WORKFLOW, repo: $REPO:$REF($REF_TYPE), job: $JOB, event: $EVENT"
+          clog Log -I "base message:\n$CLOG_BUILD_MSG"
+          MSG="msg: \"$CLOG_BUILD_MSG\" by: $ACTOR, workflow: $WORKFLOW, repo: $REPO:$REF($REF_TYPE), job: $JOB, event: $EVENT"
           clog Log -I "sending:\n$MSG"
           # use clog to ping slack via the webhook
           clog Slack "$MSG"
