@@ -81,8 +81,30 @@ jobs:
             printf "message=\"deploy: $mImage, github action: $CLOGWORK_FLOW\"" >> $GITHUB_OUTPUT
           fi
       - # ---------------------------------------------------------------------
+        name: tmp/ → artifact(${{ inputs.artifact-name }})
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.artifact-name }}
+          retention-days: 2
+          path: tmp
+      - # ---------------------------------------------------------------------
         id: notify
+        if: ${{ env.HOOK_SLACK != '' }}
         name: notify-team
         env:
-          CLOG_DEPLOY_MSG: ${{ steps.deploy-s3.outputs.message }}
-        run: clog Log -I "$CLOG_DEPLOY_MSG"
+          MESSAGE: ${{ steps.deploy-s3.outputs.message }}
+          ACTOR: ${{ github.actor }}
+          EVENT: ${{ github.event_name }}
+          JOB: ${{ github.job }}
+          REPO: ${{ github.repository }}
+          REF: ${{ github.ref }}
+          REF_TYPE: ${{ github.ref_type }}
+          WORKFLOW: ${{ github.workflow }}
+          HOOK_SLACK:  ${{ secrets.webhook_slack }}
+        run: |
+          clog Log -I "Rx message:\n$MESSAGE"
+          MSG="msg: \"$MESSAGE\" by: $ACTOR, workflow: $WORKFLOW, repo: $REPO:$REF($REF_TYPE), job: $JOB, event: $EVENT"
+          clog Log -I "Tx message:\n$MSG"
+          # use clog to ping slack via the webhook
+          clog Slack "$MSG"
+          clog Log -I "done"
