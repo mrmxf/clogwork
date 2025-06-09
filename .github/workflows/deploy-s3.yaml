@@ -20,6 +20,9 @@ on:
       artifact-name:
         required: true
         type: string
+      override:
+        required: false
+        type: string
     secrets:
       aws_access_key_id:
         required: false
@@ -70,10 +73,11 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.aws_access_key_id }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_secret_access_key }}
           S3_BUCKET: ${{ secrets.s3_bucket }}
+          OVERRIDE: ${{ inputs.override }}
         run: |
           CACHE="$(clog workflow-message-file)"
           rm -f $CACHE >/dev/null 2>&1  # delete any notify file
-          clog deploy
+          clog deploy $OVERRIDE
           if [ -f $CACHE ]; then
             echo "message=\"$(cat $CACHE)\"" >> $GITHUB_OUTPUT
           else

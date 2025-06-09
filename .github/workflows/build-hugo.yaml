@@ -19,6 +19,9 @@ on:
       artifact-name:
         required: true
         type: string
+      override:
+        required: false
+        type: string
       docker_ns:
         required: true
         type: string
@@ -74,11 +77,12 @@ jobs:
         id: clog-build
         name: hugo container with clog
         env:
+          OVERRIDE: ${{ inputs.override }}
           DOCKER_NS: ${{ inputs.docker_ns }}
         run: |
           MSG_FILE="tmp/clog-notify"
           rm -f $MSG_FILE >/dev/null 2>&1      # delete any notify file
-          clog build
+          clog build $OVERRIDE
           if [ -f "$MSG_FILE" ]; then
             echo "message=\"$(cat $MSG_FILE)\"" >> $GITHUB_OUTPUT
           else

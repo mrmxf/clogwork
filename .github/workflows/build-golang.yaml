@@ -20,6 +20,9 @@ on:
       artifact-name:
         required: true
         type: string
+      override:
+        required: false
+        type: string
       docker_ns:
         required: false
         type: string
@@ -84,11 +87,12 @@ jobs:
         id: clog-build
         name: golang build artifacts with clog
         env:
+          OVERRIDE: ${{ inputs.override }}
           DOCKER_NS: ${{ inputs.docker_ns }}
         run: |
           CACHE="$(clog workflow-message-file)"
           rm -f $CACHE >/dev/null 2>&1  # delete any notify file
-          clog build
+          clog build $OVERRIDE
           if [ -f $CACHE ]; then
             echo "message=\"$(cat $CACHE)\"" >> $GITHUB_OUTPUT
           else
