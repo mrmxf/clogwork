@@ -81,10 +81,10 @@ jobs:
           rm -f $CACHE >/dev/null 2>&1  # delete any notify file
           clog deploy MAKE $MAKE
           if [ -f $CACHE ]; then
-            echo "message=\"$(cat $CACHE)\"" >> $GITHUB_OUTPUT
+            echo "message=$(cat $CACHE)" >> $GITHUB_OUTPUT
           else
             mImage="$DOCKER_NS/${{ github.event.repository.name }}:"
-            printf "message=\"deploy: $mImage, github action: $CLOGWORK_FLOW\"" >> $GITHUB_OUTPUT
+            printf "message=deploy: $mImage, github action: $CLOGWORK_FLOW" >> $GITHUB_OUTPUT
           fi
       - # ---------------------------------------------------------------------
         id: notify
@@ -102,7 +102,7 @@ jobs:
           HOOK_SLACK:  ${{ secrets.webhook_slack }}
         run: |
           clog Log -I "Rx message:\n$MESSAGE"
-          MSG="msg: \"$MESSAGE\" by: $ACTOR, workflow: $WORKFLOW, repo: $REPO:$REF($REF_TYPE), job: $JOB, event: $EVENT"
+          MSG="msg: $MESSAGE by: $ACTOR, workflow: $WORKFLOW, repo: $REPO:$REF($REF_TYPE), job: $JOB, event: $EVENT"
           clog Log -I "Tx message:\n$MSG"
           # use clog to ping slack via the webhook
           clog Slack "$MSG"
