@@ -54,7 +54,8 @@ jobs:
           submodules: recursive
           fetch-depth: 0
       - # ---------------------------------------------------------------------
-        name: artifact(${{ inputs.artifact-name }}) → tmp/
+        id: artifacts
+        name: tmp/ → artifact(${{ inputs.artifact-name }})
         uses: actions/download-artifact@v4
         with:
           name: ${{ inputs.artifact-name }}
@@ -68,7 +69,7 @@ jobs:
           clog Log -I "Reusable workflow: ${{ env.CLOGWORK_FLOW}}"
       - # ---------------------------------------------------------------------
         id: deploy-s3
-        name: golang build artifacts with clog
+        name: golang deploy artifacts to s3 with clog
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.aws_access_key_id }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_secret_access_key }}
@@ -84,11 +85,6 @@ jobs:
             mImage="$DOCKER_NS/${{ github.event.repository.name }}:"
             printf "message=\"deploy: $mImage, github action: $CLOGWORK_FLOW\"" >> $GITHUB_OUTPUT
           fi
-      - # ---------------------------------------------------------------------
-        name: tmp/ → artifact(${{ inputs.artifact-name }})
-        uses: actions/download-artifact@v4
-        with:
-          name: ${{ inputs.artifact-name }}
       - # ---------------------------------------------------------------------
         id: notify
         if: ${{ env.HOOK_SLACK != '' }}
