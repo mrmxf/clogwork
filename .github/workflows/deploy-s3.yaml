@@ -76,6 +76,7 @@ jobs:
           S3_BUCKET: ${{ secrets.s3_bucket }}
           OVERRIDE: ${{ inputs.override }}
         run: |
+          [ -n "$OVERRIDE" ] && clog Log -I "deploy with override: $OVERRIDE"
           CACHE="$(clog workflow-message-file)"
           rm -f $CACHE >/dev/null 2>&1  # delete any notify file
           clog deploy $OVERRIDE
