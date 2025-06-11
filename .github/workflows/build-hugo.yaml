@@ -19,7 +19,7 @@ on:
       artifact-name:
         required: true
         type: string
-      override:
+      make:
         required: false
         type: string
       docker_ns:
@@ -35,7 +35,7 @@ on:
     outputs:
       message:
         description: "Result of the build for announcing on slack"
-        value: ${{ jobs.clog-build.outputs.message }}
+        value: ${{ jobs.build-hugo.outputs.message }}
 
 jobs:
   build-hugo:
@@ -77,12 +77,19 @@ jobs:
         id: clog-build
         name: hugo container with clog
         env:
-          OVERRIDE: ${{ inputs.override }}
+          MAKE: ${{ inputs.make }}
           DOCKER_NS: ${{ inputs.docker_ns }}
         run: |
           MSG_FILE="tmp/clog-notify"
           rm -f $MSG_FILE >/dev/null 2>&1      # delete any notify file
-          clog build $OVERRIDE
+          
+          if [ -z "$MAKE" ]; then 
+            clog build
+          else
+            clog Log -I "build-hugo overide provided \$MAKE=\"$MAKE\""
+            clog build MAKE "$MAKE"
+          fi
+
           if [ -f "$MSG_FILE" ]; then
             echo "message=$(cat $MSG_FILE)" >> $GITHUB_OUTPUT
           else
