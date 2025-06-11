@@ -77,10 +77,15 @@ jobs:
           S3_BUCKET: ${{ secrets.s3_bucket }}
           MAKE: ${{ inputs.make }}
         run: |
-          [ -n "$MAKE" ] && clog Log -I "deploy with make: \"$MAKE\""
           CACHE="$(clog workflow-message-file)"
           rm -f $CACHE >/dev/null 2>&1  # delete any notify file
-          clog deploy MAKE "$MAKE"
+
+          if [ -z "$MAKE" ]; then 
+            clog deploy
+          else
+            clog Log -I "deploy overide provided \$MAKE=\"$MAKE\""
+            clog deploy MAKE "$MAKE"
+          fi
           if [ -f $CACHE ]; then
             echo "message=$(cat $CACHE)" >> $GITHUB_OUTPUT
           else
