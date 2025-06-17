@@ -30,6 +30,14 @@ jobs:
         env:
           ENV_CONTEXT: ${{ toJson(env) }}
         run: echo "$ENV_CONTEXT"
+      - name: Dump vars context
+        env:
+          VARS_CONTEXT: ${{ toJson(vars) }}
+        run: echo "$VARS_CONTEXT"
+      - name: Dump secrets context
+        env:
+          ENV_CONTEXT: ${{ toJson(secrets) }}
+        run: echo "$SECRETS_CONTEXT"
       - name: Dump job context
         env:
           JOB_CONTEXT: ${{ toJson(job) }}
@@ -56,8 +64,10 @@ jobs:
         run: echo "$MATRIX_CONTEXT"
 
       - name: Show default environment variables
+        env:
+          DOCKER_NS: ${{ vars.DOCKER_NS }}
         run: |
-          echo "job($GITHUB_JOB) with id($GITHUB_JOB) action ($GITHUB_ACTION) run($GITHUB_RUN_ID) by ($GITHUB_ACTOR)"
+          echo "job($GITHUB_JOB) with id($GITHUB_JOB) action ($GITHUB_ACTION) run($GITHUB_RUN_ID) by ($GITHUB_ACTOR) using ($DOCKER_NS)"
           echo
           echo "GitHub defaults:"
           echo "GITHUB_WORKFLOW          $GITHUB_WORKFLOW"
