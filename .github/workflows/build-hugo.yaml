@@ -74,6 +74,15 @@ jobs:
           clog install hugo
           clog install ko
       - # ---------------------------------------------------------------------
+        id: clog-checkout-main
+        name: checkout to main version if needed
+        env:
+          MAKE: ${{ inputs.make }}
+          DOCKER_NS: ${{ inputs.docker_ns }}
+        # if the MAKE variable contains "main", then checkout to the tag
+        # representing the main version of the website for deployment
+        run: clog Should MAKE "main" && clog build-main-website
+      - # ---------------------------------------------------------------------
         id: clog-build
         name: hugo container with clog
         env:
