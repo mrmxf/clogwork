@@ -81,7 +81,7 @@ jobs:
           DOCKER_NS: ${{ inputs.docker_ns }}
         # if the MAKE variable contains "main", then checkout to the tag
         # representing the main version of the website for deployment
-        run: clog Should MAKE "main" && clog build-main-website || exit 0
+        run: clog Should MAKE "main" && clog bc-main-checkout || exit 0
       - # ---------------------------------------------------------------------
         id: clog-build
         name: hugo container with clog
