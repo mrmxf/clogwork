@@ -52,6 +52,9 @@ jobs:
         run: |
           # install clog & set up some of the funky build logic
           eval "${{ secrets.get_clog }}"
+          
+          # make the artifacts folder to propagate clog workflow internals
+          mkdir -p "$(dirname $(clog bc-artifacts))"
 
           case "${{ github.event_name }}" in
 
@@ -129,7 +132,9 @@ jobs:
         with:
           name: ${{ inputs.artifact-name }}
           retention-days: 2
-          path: kodata
+          path: |
+            kodata
+            tmp
       - # ---------------------------------------------------------------------
         id: notify
         if: ${{ env.HOOK_SLACK != '' }}
