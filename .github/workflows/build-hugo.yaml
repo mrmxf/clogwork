@@ -52,9 +52,6 @@ jobs:
         run: |
           # install clog & set up some of the funky build logic
           eval "${{ secrets.get_clog }}"
-          
-          # make the artifacts folder to propagate clog workflow internals
-          mkdir -p "$(dirname $(clog bc-artifacts))"
 
           case "${{ github.event_name }}" in
 
@@ -106,6 +103,10 @@ jobs:
         id: clog-setup
         name: setup tools
         run: |
+          # make the artifacts folder to propagate clog workflow internals
+          mkdir -p "$(dirname $(clog bc-artifacts))"
+
+          # install tools
           clog install golang
           clog install hugo
           clog install ko
