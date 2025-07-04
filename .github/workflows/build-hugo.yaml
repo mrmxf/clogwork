@@ -39,18 +39,59 @@ on:
 
 jobs:
   build-hugo:
+    # don't let random strangers run the PR workflows.
+    if: ${{ contains(fromJSON('["mrmxf", "charlottesweb2"]'), github.event.sender.login) || github.event_name == 'schedule' }}
     runs-on: ubuntu-latest
     outputs:
       message: ${{ steps.clog-build.outputs.message }}
 
     steps:
       - # ---------------------------------------------------------------------
-        id: check
+        id: init-clog
+        name: init clog
+        run: |
+          # install clog & set up some of the funky build logic
+          eval "${{ secrets.get_clog }}"
+
+          case "${{ github.event_name }}" in
+
+          "pull_request_target")
+            verb="PR"
+            ref="${{ github.event.pull_request.head.sha }}"               # head of the PR commits
+            src="${{ github.event.pull_request.head.repo.full_name }}"    # head name
+            url="${{ github.event.pull_request.head.repo.html_url }}"     # head url
+            ;;
+
+          "push")
+            verb="push"
+            ref="${{ github.ref }}"                            # event trigger
+            src="${{ github.repository }}"                     # event repo
+            url="${{ github.event.repository.html_url }}"      # event human url
+            ;;
+
+          "schedule")
+            verb="SCHED"
+            ref="ref/tags/$(clog bc-main-prod)"                # production tag
+            src="${{ github.repository }}"                     # production repo
+            url="${{ github.event.repository.html_url }}"      # production human url
+            ;;
+
+          esac
+
+          echo "verb=\"$verb\"" >> $GITHUB_ENV
+          echo "ref=\"$ref\""   >> $GITHUB_ENV
+          echo "src=\"$src\""   >> $GITHUB_ENV
+          echo "url=\"$url\""   >> $GITHUB_ENV
+          
+          clog Log -I "Reusable workflow: ${{ env.CLOGWORK_FLOW}}"
+      - # ---------------------------------------------------------------------
+        id: checkout
         name: Checkout repo
         uses: actions/checkout@v4
         with:
+          repository: $src
+          ref: $ref
           submodules: recursive
-          fetch-depth: 0
       - # ---------------------------------------------------------------------
         id: docker
         name: Login to Docker Hub
@@ -59,29 +100,12 @@ jobs:
           username: ${{  inputs.docker_ns }}
           password: ${{ secrets.docker_pat }}
       - # ---------------------------------------------------------------------
-        id: get-clog
-        name: get clog
-        env:
-          GET_CLOG: ${{ secrets.get_clog }}
-        run: |
-          eval "$GET_CLOG"
-          clog Log -I "Reusable workflow: ${{ env.CLOGWORK_FLOW}}"
-      - # ---------------------------------------------------------------------
         id: clog-setup
         name: setup tools
         run: |
           clog install golang
           clog install hugo
           clog install ko
-      - # ---------------------------------------------------------------------
-        id: clog-checkout-main
-        name: checkout to main version if needed
-        env:
-          MAKE: ${{ inputs.make }}
-          DOCKER_NS: ${{ inputs.docker_ns }}
-        # if the MAKE variable contains "main", then checkout to the tag
-        # representing the main version of the website for deployment
-        run: clog Should MAKE "main" && clog bc-main-checkout || exit 0
       - # ---------------------------------------------------------------------
         id: clog-build
         name: hugo container with clog
@@ -93,17 +117,11 @@ jobs:
           rm -f $MSG_FILE >/dev/null 2>&1      # delete any notify file
           
           if [ -z "$MAKE" ]; then 
+            # use the standard build if no overrides
             clog build
           else
-            clog Log -I "build-hugo overide provided \$MAKE=\"$MAKE\""
+            clog Log -W "build-hugo overide provided \$MAKE=\"$MAKE\""
             clog build MAKE "$MAKE"
-          fi
-
-          if [ -f "$MSG_FILE" ]; then
-            echo "message=$(cat $MSG_FILE)" >> $GITHUB_OUTPUT
-          else
-            mImage="$DOCKER_NS/${{ github.event.repository.name }}:"
-            printf "message=deployed image: $mImage, github action: $CLOGWORK_FLOW" >> $GITHUB_OUTPUT
           fi
       - # ---------------------------------------------------------------------
         name: kodata/ →  artifact(${{ inputs.artifact-name }})
@@ -117,34 +135,18 @@ jobs:
         if: ${{ env.HOOK_SLACK != '' }}
         name: notify-team
         env:
-          MESSAGE: ${{ steps.clog-build.outputs.message }}
-          ACTOR: ${{ github.actor }}
-          JOB: ${{ github.job }}
-          REF: ${{ github.ref }}
-          REF_TYPE: ${{ github.ref_type }}
-          WORKFLOW: ${{ github.workflow }}
           HOOK_SLACK:  ${{ secrets.webhook_slack }}
         run: |
           eval "$(clog Source project config); $(clog Crayon)" # setting & highlights
 
-          # pull in messages and status from build
+          # pull in messages and status from build stage
           eval "$(clog bc-artifacts)"
           
-          level="-S"; [ $BUILDstatus -gt 0 ] && level="-E"
+          # set the log level Success or Error
+          logLevel="-S"; [ $BUILDstatus -gt 0 ] && logLevel="-E"
 
-          verb="push"
-          src=="${{ github.repository }}"
-          srcUrl="${{ github.repositoryUrl }}"
-          dstUrl="https://hub.docker.com/r/$BUILDrepo"
-
-          if [[ "${{ github.event_name }}" == "pull_request_target" ]]; then
-            verb="PR"
-            src="${{ github.event.pull_request.head.repo.full_name }}"
-            srcUrl="${{ github.event.pull_request.head.repo.svn_url }}"
-          fi
-        
           toastMsg="$verb github action (${{ github.actor }}) → $BUILDrepo:$BUILDtag1 ($BUILDtag2)"
-          fromMsg="$verb (${{ github.actor }}) $src";
+          fromMsg="$verb (${{ github.actor }}) $src ($ref)";
 
-          clog SlackLog $level --from "$fromMsg" --srcUrl "$srcUrl" --dstUrl "$dstUrl" "$BUILDmsg" 
+          clog SlackLog $logLevel --from "$fromMsg" --srcUrl "$url" --dstUrl "$dstUrl" "$BUILDmsg" 
           clog Log -I "done"
