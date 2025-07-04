@@ -78,10 +78,10 @@ jobs:
 
           esac
 
-          echo "verb=\"$verb\"" >> $GITHUB_ENV
-          echo "ref=\"$ref\""   >> $GITHUB_ENV
-          echo "src=\"$src\""   >> $GITHUB_ENV
-          echo "url=\"$url\""   >> $GITHUB_ENV
+          echo "verb=$verb" >> $GITHUB_ENV
+          echo "ref=$ref"   >> $GITHUB_ENV
+          echo "src=$src"   >> $GITHUB_ENV
+          echo "url=$url"   >> $GITHUB_ENV
           
           clog Log -I "Reusable workflow: ${{ env.CLOGWORK_FLOW}}"
       - # ---------------------------------------------------------------------
