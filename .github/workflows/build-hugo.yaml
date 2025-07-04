@@ -145,6 +145,9 @@ jobs:
         run: |
           eval "$(clog Source project config); $(clog Crayon)" # setting & highlights
 
+          ls -al tmp
+          cat tmp/artifacts
+
           # pull in messages and status from build stage
           eval "$(clog bc-artifacts)"
           
