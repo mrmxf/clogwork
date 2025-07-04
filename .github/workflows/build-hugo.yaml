@@ -62,7 +62,7 @@ jobs:
             url="${{ github.event.pull_request.head.repo.html_url }}"     # head url
             ;;
 
-          "push")
+          "push" || "workflow_dispatch")
             verb="push"
             ref="${{ github.ref }}"                            # event trigger
             src="${{ github.repository }}"                     # event repo
