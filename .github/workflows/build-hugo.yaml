@@ -89,8 +89,8 @@ jobs:
         name: Checkout repo
         uses: actions/checkout@v4
         with:
-          repository: $src
-          ref: $ref
+          repository: ${{ env.src }}
+          ref:  ${{ env.ref }}
           submodules: recursive
       - # ---------------------------------------------------------------------
         id: docker
