@@ -151,8 +151,8 @@ jobs:
           # set the log level Success or Error
           logLevel="-S"; [ $BUILDstatus -gt 0 ] && logLevel="-E"
 
-          toastMsg="$verb github action (${{ github.actor }}) → $BUILDrepo:$BUILDtag1 ($BUILDtag2)"
+          toastMsg="$verb (github action ${{ github.actor }}) → $BUILDrepo:$BUILDtag1 ($BUILDtag2)"
           fromMsg="$verb (${{ github.actor }}) $src ($ref)";
 
-          clog SlackLog $logLevel --from "$fromMsg" --srcUrl "$url" --dstUrl "$dstUrl" "$BUILDmsg" 
+          clog SlackLog $logLevel --from "$fromMsg" --toast "$toastMsg" --srcUrl "$url" --dstUrl "$dstUrl" "$BUILDmsg" 
           clog Log -I "done"
